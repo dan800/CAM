@@ -67,13 +67,30 @@ contains
 
 ! local variables
 
-  real(r8) :: ali_val
-
-  cool(:ncol,:) = xco2(:ncol,:)
+  real(r8), dimension(pver) :: p, tn, zkm
+  real(r8), dimension(pver) :: co2_vmr, o_vmr, n2_vmr, o2_vmr
+  real(r8), dimension(pver) :: ali_cool
   
-  call ali(ali_val, pver)
+  integer :: icol
   
-  cool(:ncol,10) = ali_val 
+  cool(:,:) = 0.0_r8
+ 
+  do icol=1,ncol
+  
+      p = pmid(icol,:)*1.0e-5_r8 ! conver pmid in Pa to bars
+      zkm = -7.0_r8*log(p/1.013_r8)
+      tn = t(icol,:)
+      
+      co2_vmr = xco2(icol,:)
+      o_vmr = xo(icol,:)
+      n2_vmr = xn2(icol,:)
+      o2_vmr = xo2(icol,:)
+      
+      call ali(zkm, p, tn, co2_vmr, o_vmr, n2_vmr, o2_vmr, ali_cool, pver)
+      
+      cool(icol,:) = ali_cool(:) 
+  
+  enddo
   
   call outfld ('ALIARMS_Q', cool, pcols, lchnk)
   
